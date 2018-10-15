@@ -18,7 +18,8 @@ from sklearn.linear_model import Lasso, Ridge, LassoCV
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
 from collections import Counter
-get_ipython().run_line_magic('pylab', 'inline')
+import matplotlib.pylab as plt
+# get_ipython().run_line_magic('pylab', 'inline')
 
 
 # In[315]:
@@ -131,12 +132,13 @@ X, y = data.values[:, :-1], data.values[:, -1]
 # In[327]:
 
 
-plt.figure(figsize(8,6))
+plt.figure()
 stat = data.groupby(y_index)[y_index].agg(lambda x : float(len(x)) / data.shape[0])
 stat.plot(kind='bar', fontsize=12, width=0.9, color="red")
 plt.xticks(rotation=0)
 plt.ylabel('Proportion', fontsize=14)
 plt.xlabel(str(y_index) + ' column', fontsize=14)
+plt.show()
 
 
 # Распределение ответов похоже на нормальное, поэтому буду решать задачу регресии 
@@ -175,7 +177,11 @@ print('Среднеквадратичная ошибка:', error_norm)
 # In[331]:
 
 
-get_ipython().run_cell_magic('time', '', 'stoch_grad_desc_weights, stoch_errors_by_iter = my_lr.stochastic_gradient_descent(X_with_ones, y, np.zeros((X_with_ones.shape[1],1)), eta=1e-2, max_iter=1e5, min_weight_dist=1e-8, seed=0, verbose=True)')
+stoch_grad_desc_weights, stoch_errors_by_iter = my_lr.stochastic_gradient_descent(X_with_ones, y,
+                                                                                  np.zeros((X_with_ones.shape[1],1)),
+                                                                                  eta=1e-2, max_iter=1e5,
+                                                                                  min_weight_dist=1e-8, seed=0,
+                                                                                  verbose=True)
 
 
 # Посмотрим, чему равна ошибка на первых 50 итерациях стохастического градиентного спуск.
@@ -184,19 +190,19 @@ get_ipython().run_cell_magic('time', '', 'stoch_grad_desc_weights, stoch_errors_
 
 
 plt.plot(range(50), list(stoch_errors_by_iter[:50]))
-xlabel('Iteration number')
-ylabel('MSE')
-
+plt.xlabel('Iteration number')
+plt.ylabel('MSE')
+plt.show()
 
 # Теперь посмотрим на зависимость ошибки от номера итерации для $10^5$ итераций стохастического градиентного спуска. Видим, что алгоритм сходится.
 
 # In[333]:
 
 
-plot(range(len(stoch_errors_by_iter)), stoch_errors_by_iter)
-xlabel('Iteration number')
-ylabel('MSE')
-
+plt.plot(range(len(stoch_errors_by_iter)), stoch_errors_by_iter)
+plt.xlabel('Iteration number')
+plt.ylabel('MSE')
+plt.show()
 
 # Посмотрим на вектор весов, к которому сошелся метод и сравним его с вектором весов из аналитического решения
 
@@ -270,6 +276,7 @@ plt.plot(lasso_regressor_CV.alphas_, lasso_regressor_CV.mse_path_.mean(axis = 1)
 plt.xlabel("alpha")
 plt.ylabel("averaged MSE")
 plt.title("LassoCV")
+plt.show()
 print ("alpha = %f\n"  % (lasso_regressor_CV.alpha_))
 print ("признак -> коэффициент\n")
 for pr, w in zip(data.columns[:-1], lasso_regressor_CV.coef_):
@@ -294,7 +301,7 @@ while (iter<=3):
     plt.xlabel('alpha')
     plt.ylabel('MSE')
     iter+=1
-
+plt.show()
 
 # In[341]:
 
@@ -337,8 +344,8 @@ ridge_regressor.score(X, y)
 np.random.seed(0)
 X_train, X_test, y_train, y_test = train_test_split(data.loc[:, data.columns[:-1]], data[data.columns[-1]], test_size=0.3)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(y_train))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error([np.mean(y_train)]*len(y_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error([np.mean(y_train)]*len(y_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error([np.mean(y_train)]*len(y_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error([np.mean(y_train)]*len(y_test), y_test)))
 
 
 # ## Линейная регрессия
@@ -350,8 +357,8 @@ lm = LinearRegression()
 lm.fit(X_train, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(lm.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(lm.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(lm.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(lm.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(lm.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % lm.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, lm.predict(X_test)))
 
@@ -372,8 +379,8 @@ sgd = SGDRegressor(random_state = 0, max_iter = 100)
 sgd.fit(X_train, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(sgd.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(sgd.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(sgd.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(sgd.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(sgd.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % sgd.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, sgd.predict(X_test)))
 
@@ -403,14 +410,14 @@ grid_cv = GridSearchCV(sgd, parameters_grid, scoring = 'mean_absolute_error', cv
 # In[351]:
 
 
-get_ipython().run_cell_magic('time', '', 'grid_cv.fit(X_train, y_train)')
+grid_cv.fit(X_train, y_train)
 
 
 # In[352]:
 
 
-print (grid_cv.best_score_)
-print (grid_cv.best_params_)
+print(grid_cv.best_score_)
+print(grid_cv.best_params_)
 
 
 # In[353]:
@@ -418,8 +425,8 @@ print (grid_cv.best_params_)
 
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(grid_cv.best_estimator_.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(grid_cv.best_estimator_.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(grid_cv.best_estimator_.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(grid_cv.best_estimator_.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(grid_cv.best_estimator_.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % grid_cv.best_estimator_.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, grid_cv.best_estimator_.predict(X_test)))
 
@@ -434,24 +441,24 @@ print (list(map(lambda x: int(round(x)), (grid_cv.best_estimator_.predict(X_test
 # In[355]:
 
 
-pylab.figure(figsize=(16, 6))
+plt.figure(figsize=(16, 6))
 
-pylab.subplot(1,2,1)
-pylab.grid(True)
-pylab.scatter(y_train, sgd.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, sgd.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('no parameters setting')
-pylab.xlim(-10,50)
-pylab.ylim(-10,50)
+plt.subplot(1,2,1)
+plt.grid(True)
+plt.scatter(y_train, sgd.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, sgd.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('no parameters setting')
+plt.xlim(-10,50)
+plt.ylim(-10,50)
 
-pylab.subplot(1,2,2)
-pylab.grid(True)
-pylab.scatter(y_train, grid_cv.best_estimator_.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, grid_cv.best_estimator_.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('grid search')
-pylab.xlim(-10,50)
-pylab.ylim(-10,50)
-
+plt.subplot(1,2,2)
+plt.grid(True)
+plt.scatter(y_train, grid_cv.best_estimator_.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, grid_cv.best_estimator_.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('grid search')
+plt.xlim(-10,50)
+plt.ylim(-10,50)
+plt.show()
 
 # ## ARD регрессия
 
@@ -462,8 +469,8 @@ ard = ARDRegression()
 ard.fit(X_train, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(ard.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(ard.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(ard.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(ard.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(ard.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % ard.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, ard.predict(X_test)))
 
@@ -471,8 +478,8 @@ print('абсолютная ошибка: %f' % mean_absolute_error(y_test, ard.
 # In[357]:
 
 
-print (list(np.array(y_test)[:10]))
-print (list(map(lambda x: int(round(x)), (ard.predict(X_test))[:10])))
+print(list(np.array(y_test)[:10]))
+print(list(map(lambda x: int(round(x)), (ard.predict(X_test))[:10])))
 
 
 # ## Случайный лес
@@ -486,8 +493,8 @@ rf = RandomForestRegressor(n_estimators=100, min_samples_leaf=3)
 rf.fit(X_train, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(rf.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(rf.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(rf.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(rf.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(rf.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % rf.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, rf.predict(X_test)))
 
@@ -495,41 +502,41 @@ print('абсолютная ошибка: %f' % mean_absolute_error(y_test, rf.p
 # In[359]:
 
 
-print (list(np.array(y_test)[:10]))
-print (list(map(lambda x: int(round(x)), (rf.predict(X_test))[:10])))
+print(list(np.array(y_test)[:10]))
+print(list(map(lambda x: int(round(x)), (rf.predict(X_test))[:10])))
 
 
 # In[360]:
 
 
-pylab.figure(figsize=(16, 6))
+plt.figure(figsize=(16, 6))
 
-pylab.subplot(1,2,1)
-pylab.grid(True)
-pylab.scatter(y_train, lm.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, lm.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('LinearRegression')
-pylab.xlim(-10,50)
-pylab.ylim(-10,50)
+plt.subplot(1,2,1)
+plt.grid(True)
+plt.scatter(y_train, lm.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, lm.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('LinearRegression')
+plt.xlim(-10,50)
+plt.ylim(-10,50)
 
-pylab.subplot(1,2,2)
-pylab.grid(True)
-pylab.scatter(y_train, rf.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, rf.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('RandomForestRegressor')
-pylab.xlim(-10,50)
-pylab.ylim(-10,50)
-
+plt.subplot(1,2,2)
+plt.grid(True)
+plt.scatter(y_train, rf.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, rf.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('RandomForestRegressor')
+plt.xlim(-10,50)
+plt.ylim(-10,50)
+plt.show()
 
 # Сравним ошибки линейной регрессии и случайного леса на тестовой выборке:
 
 # In[361]:
 
 
-plt.figure(figsize(8,6))
+plt.figure()
 plt.hist(abs(y_test - lm.predict(X_test)) - abs(y_test - rf.predict(X_test)), bins=15, normed=True)
 plt.xlabel('Difference of absolute errors')
-
+plt.show()
 
 # Различия между средними абсолютными ошибками значимы:
 
@@ -579,8 +586,8 @@ lm_h = LinearRegression()
 lm_h.fit(X_train_new, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(lm_h.predict(X_train_new)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(lm_h.predict(X_train_new), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(lm_h.predict(X_test_new), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(lm_h.predict(X_train_new), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(lm_h.predict(X_test_new), y_test)))
 print('коэффициент детерминации: %f' % lm_h.score(X_test_new, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, lm_h.predict(X_test_new)))
 
@@ -592,8 +599,8 @@ sgd_h = SGDRegressor(random_state = 0, max_iter = 100)
 sgd_h.fit(X_train_new, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(sgd_h.predict(X_train_new)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(sgd_h.predict(X_train_new), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(sgd_h.predict(X_test_new), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(sgd_h.predict(X_train_new), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(sgd_h.predict(X_test_new), y_test)))
 print('коэффициент детерминации: %f' % sgd_h.score(X_test_new, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, sgd_h.predict(X_test_new)))
 
@@ -605,8 +612,8 @@ ard_h = ARDRegression()
 ard_h.fit(X_train_new, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(ard_h.predict(X_train_new)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(ard_h.predict(X_train_new), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(ard_h.predict(X_test_new), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(ard_h.predict(X_train_new), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(ard_h.predict(X_test_new), y_test)))
 print('коэффициент детерминации: %f' % ard_h.score(X_test_new, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, ard_h.predict(X_test_new)))
 
@@ -618,8 +625,8 @@ rf_h = RandomForestRegressor(n_estimators=100, min_samples_leaf=3)
 rf_h.fit(X_train_new, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(rf_h.predict(X_train_new)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(rf_h.predict(X_train_new), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(rf_h.predict(X_test_new), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(rf_h.predict(X_train_new), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(rf_h.predict(X_test_new), y_test)))
 print('коэффициент детерминации: %f' % rf_h.score(X_test_new, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, rf_h.predict(X_test_new)))
 
@@ -645,8 +652,8 @@ gb = GradientBoostingRegressor(n_estimators=100, min_samples_leaf=3)
 gb.fit(X_train, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(gb.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(gb.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(gb.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(gb.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(gb.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % gb.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, gb.predict(X_test)))
 
@@ -666,8 +673,8 @@ xgb = XGBRegressor()
 xgb.fit(X_train, y_train)
 np.random.seed(0)
 print("среднее значение отклика обучающей выборки: %f" % np.mean(xgb.predict(X_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % sqrt(mean_squared_error(xgb.predict(X_train), y_train)))
-print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % sqrt(mean_squared_error(xgb.predict(X_test), y_test)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, обучение: %f" % np.sqrt(mean_squared_error(xgb.predict(X_train), y_train)))
+print("корень из среднеквадратичной ошибки прогноза средним значением на обучающей выборке, тест: %f" % np.sqrt(mean_squared_error(xgb.predict(X_test), y_test)))
 print('коэффициент детерминации: %f' % xgb.score(X_test, y_test))
 print('абсолютная ошибка: %f' % mean_absolute_error(y_test, xgb.predict(X_test)))
 
@@ -675,8 +682,8 @@ print('абсолютная ошибка: %f' % mean_absolute_error(y_test, xgb.
 # In[372]:
 
 
-print (list(np.array(y_test)[50:60]))
-print (list(map(lambda x: int(round(x)), (xgb.predict(X_test))[50:60])))
+print(list(np.array(y_test)[50:60]))
+print(list(map(lambda x: int(round(x)), (xgb.predict(X_test))[50:60])))
 
 
 # In[376]:
@@ -690,42 +697,42 @@ xgb_importances.sort_values(by='importance', ascending=False)
 # In[373]:
 
 
-pylab.figure(figsize=(16, 6))
+plt.figure(figsize=(16, 6))
 
-pylab.subplot(1,3,1)
-pylab.grid(True)
-pylab.scatter(y_train, lm.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, lm.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('LinearRegression')
-pylab.xlim(0,30)
-pylab.ylim(0,30)
+plt.subplot(1,3,1)
+plt.grid(True)
+plt.scatter(y_train, lm.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, lm.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('LinearRegression')
+plt.xlim(0,30)
+plt.ylim(0,30)
 
-pylab.subplot(1,3,2)
-pylab.grid(True)
-pylab.scatter(y_train, rf.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, rf.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('RandomForesRegressor')
-pylab.xlim(0,30)
-pylab.ylim(0,30)
+plt.subplot(1,3,2)
+plt.grid(True)
+plt.scatter(y_train, rf.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, rf.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('RandomForesRegressor')
+plt.xlim(0,30)
+plt.ylim(0,30)
 
-pylab.subplot(1,3,3)
-pylab.grid(True)
-pylab.scatter(y_train, xgb.predict(X_train), alpha=0.5, color = 'red')
-pylab.scatter(y_test, xgb.predict(X_test), alpha=0.5, color = 'blue')
-pylab.title('XGBRegressor')
-pylab.xlim(0,30)
-pylab.ylim(0,30)
-
+plt.subplot(1,3,3)
+plt.grid(True)
+plt.scatter(y_train, xgb.predict(X_train), alpha=0.5, color = 'red')
+plt.scatter(y_test, xgb.predict(X_test), alpha=0.5, color = 'blue')
+plt.title('XGBRegressor')
+plt.xlim(0,30)
+plt.ylim(0,30)
+plt.show()
 
 # Сравним ошибки линейной регрессии и градиентного бустинга на тестовой выборке:
 
 # In[416]:
 
 
-plt.figure(figsize(8,6))
+plt.figure()
 plt.hist(abs(y_test - lm.predict(X_test)) - abs(y_test - xgb.predict(X_test)), bins=15, normed=True)
 plt.xlabel('Difference of absolute errors')
-
+plt.show()
 
 # Различия между средними абсолютными ошибками значимы:
 
@@ -751,10 +758,10 @@ tmeans_lm_xgb.tconfint_diff(alpha=0.05, alternative='two-sided', usevar='pooled'
 # In[421]:
 
 
-plt.figure(figsize(8,6))
+plt.figure()
 plt.hist(abs(y_test - rf.predict(X_test)) - abs(y_test - xgb.predict(X_test)), bins=15, normed=True)
 plt.xlabel('Difference of absolute errors')
-
+plt.show()
 
 # Различия между средними абсолютными ошибками значимы:
 
